@@ -51,7 +51,7 @@ class Interpreter:
         
         while not i > len(self.code) - 1:
             if self.debug:
-                self.debug.update(self.array)
+                self.debug.update(self.array, self.code, i)
 
             if self.code[i] == "[":
                 if self.array[self.pointer] == 0:
