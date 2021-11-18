@@ -1,4 +1,5 @@
-import sys, time
+import debugger
+import sys
 
 class Interpreter:
     def __init__(self, code, debug=None, size=30000):
@@ -75,6 +76,8 @@ class Interpreter:
                 
             i += 1
 
-script = ""
-stuff = Interpreter(script, debug=False)
+with open("hello.bf", "r") as f:
+    script = f.read()
+
+stuff = Interpreter(script, debug=debugger.ArrayVisualization)
 stuff.run()

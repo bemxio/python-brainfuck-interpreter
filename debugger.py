@@ -1,26 +1,24 @@
 import pygame
+import time
 
 class ArrayVisualization:
     def __init__(self) -> None:
         pygame.init()
-        self.surface = pygame.display.set_mode([500, 20])
-        self.font = pygame.font.SysFont('Arial', 15)
-    
-    def grid(self):
-        width, height = self.surface.get_size()
-        size = 20
 
-        for x in range(0, width, size):
-            for y in range(0, height, size):
-                pygame.draw.rect(
-                    self.surface, 
-                    (255, 255, 255), 
-                    (x, y, size, size), 
-                    1
-                )
+        resolution = (1000, 100)
+        self.width, self.height = resolution
+
+        self.surface = pygame.display.set_mode(resolution)
+        self.font = pygame.font.SysFont('consolas', 22)
 
     def update(self, array):
         preview = array[:25]
-        self.grid()
 
-        
+        self.surface.fill((0, 0, 0))
+        text = self.font.render(str(preview), True, (255, 255, 255))
+        self.surface.blit(text, (10, 10))
+
+        pygame.display.update()
+        pygame.event.pump()
+
+        time.sleep(0.01)
