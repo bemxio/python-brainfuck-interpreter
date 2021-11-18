@@ -1,15 +1,22 @@
 import debugger
+import json
 import sys
 
 class Interpreter:
-    def __init__(self, code, debug=None, size=30000):
+    def __init__(self, dialect="dialects/default.json", debugger=None, size=30000):
         self.array = [0 for _ in range(size)]
         self.pointer = 0
         self.size = size
-
-        self.code = list(code)
-        self.debug = debug() if debug else None
+        
+        self.dialect = None
+        self.load_dialect(dialect)
+        
+        self.debugger = debugger() if debugger else None
     
+    def load_dialect(self, dialect):
+        with open(dialect, "r") as f:
+            self.dialect = json.load(f)
+
     # functions for manipulating the pointer & array
     def right(self):
         self.pointer += 1
@@ -37,47 +44,43 @@ class Interpreter:
         sys.stdout.write(chr(self.array[self.pointer]))
         
     # actual executors
-    def run(self):
-        reference = {
-            ">": self.right,
-            "<": self.left,
-            "+": self.plus,
-            "-": self.minus,
-            ",": self.input,
-            ".": self.output
-        }
+    def run(self, code, split=False, splitter=" "):
+        self.code = code.split(splitter) if split else list(code)
+        translated = list(filter(None, [self.dialect.get(c) for c in self.code]))
+       
+        index, loops = 0, []
+        reference = [self.right, self.left, self.plus, self.minus, self.output, self.input]
         
-        i, j = 0, []
-        
-        while not i > len(self.code) - 1:
-            if self.debug:
-                self.debug.update(self.array, self.code, i)
+        while not index > len(translated) - 1:
+            if self.debugger:
+                self.debugger.update(self.array, self.code, loops)
 
-            if self.code[i] == "[":
+            if translated[index] == 7:
                 if self.array[self.pointer] == 0:
-                    i += (self.code[i:].index("]") - i)
+                    index += translated[index:].index(8) - index
                     continue
                 else:
-                    j.append(i)
+                    loops.append(index)
             
-            if self.code[i] == "]":
-                if not j:
+            if translated[index] == 8:
+                if not loops:
                     raise SyntaxError()
                 
                 if self.array[self.pointer] != 0:
-                    i = j[-1] + 1
+                    index = loops[-1] + 1
                     continue
                 else:
-                    j.pop()
-            
-            function = reference.get(self.code[i]) 
+                    loops.pop()
+
+            function = reference[translated[index] - 1] if translated[index] - 1 < len(reference) else None
+
             if function:
                 function()
                 
-            i += 1
+            index += 1
 
 with open("hello.bf", "r") as f:
     script = f.read()
 
-stuff = Interpreter(script, debug=debugger.ArrayVisualization)
-stuff.run()
+stuff = Interpreter(debugger=None)
+stuff.run(script)
