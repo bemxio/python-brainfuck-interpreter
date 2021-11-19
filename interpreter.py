@@ -11,7 +11,7 @@ class Interpreter:
         self.dialect = None
         self.load_dialect(dialect)
         
-        self.debugger = debugger() if debugger else None
+        self.debugger = debugger
     
     def load_dialect(self, dialect):
         with open(dialect, "r") as f:
@@ -53,7 +53,7 @@ class Interpreter:
         
         while not index > len(translated) - 1:
             if self.debugger:
-                self.debugger.update(self.array, self.code, loops)
+                self.debugger.update(self.array, self.code, index)
 
             if translated[index] == 7:
                 if self.array[self.pointer] == 0:
@@ -82,5 +82,5 @@ class Interpreter:
 with open("hello.bf", "r") as f:
     script = f.read()
 
-stuff = Interpreter(debugger=None)
+stuff = Interpreter()
 stuff.run(script)
